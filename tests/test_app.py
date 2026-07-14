@@ -46,3 +46,14 @@ def test_duplicate_signup_is_rejected():
     assert second_response.status_code == 400
     assert second_response.json()["detail"] == "Student already signed up for this activity"
     assert app_module.activities[activity_name]["participants"].count(email) == 1
+
+
+def test_unregister_participant():
+    client = TestClient(app_module.app)
+    activity_name = "Chess Club"
+    email = "michael@mergington.edu"
+
+    response = client.delete(f"/activities/{activity_name}/participants/{email}")
+
+    assert response.status_code == 200
+    assert email not in app_module.activities[activity_name]["participants"]
