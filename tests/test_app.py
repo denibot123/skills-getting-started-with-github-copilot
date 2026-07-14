@@ -33,27 +33,35 @@ def reset_activities():
     app_module.activities.clear()
 
 
-def test_duplicate_signup_is_rejected():
-    client = TestClient(app_module.app)
+@pytest.fixture
+def client():
+    return TestClient(app_module.app)
+
+
+def test_duplicate_signup_is_rejected(client):
+    # Arrange
     activity_name = "Chess Club"
     email = "newstudent@mergington.edu"
 
+    # Act
     first_response = client.post(f"/activities/{activity_name}/signup?email={email}")
-    assert first_response.status_code == 200
-
     second_response = client.post(f"/activities/{activity_name}/signup?email={email}")
 
+    # Assert
+    assert first_response.status_code == 200
     assert second_response.status_code == 400
     assert second_response.json()["detail"] == "Student already signed up for this activity"
     assert app_module.activities[activity_name]["participants"].count(email) == 1
 
 
-def test_unregister_participant():
-    client = TestClient(app_module.app)
+def test_unregister_participant(client):
+    # Arrange
     activity_name = "Chess Club"
     email = "michael@mergington.edu"
 
+    # Act
     response = client.delete(f"/activities/{activity_name}/participants/{email}")
 
+    # Assert
     assert response.status_code == 200
     assert email not in app_module.activities[activity_name]["participants"]
